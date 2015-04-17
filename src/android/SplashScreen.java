@@ -213,20 +213,30 @@ public class SplashScreen extends CordovaPlugin {
 
     @Override
     public void onNewIntent(Intent intent) {
-        initDeepLink(false);
+        initDeepLinkFromIntent(intent, false);
     }
 
     private void initDeepLink(boolean silently) {
         if (this.deepLink == null) {
             Intent intent = ((CordovaActivity) this.webView.getContext()).getIntent();
-            if (intent != null && intent.getDataString() != null && intent.getDataString().contains("://")) {
-                this.deepLink = intent.getDataString();
-                if (this.watchDeepLinkCallbackContext != null && !silently) {
-                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, this.deepLink);
-                    pluginResult.setKeepCallback(true);
-                    this.watchDeepLinkCallbackContext.sendPluginResult(pluginResult);
-                }
+            initDeepLinkFromIntent(intent, silently);
+        }
+    }
+
+    private void initDeepLinkFromIntent(Intent intent, boolean silently) {
+        if (intent != null && intent.getDataString() != null && intent.getDataString().contains("://")) {
+            this.deepLink = intent.getDataString();
+            if (!silently) {
+                notifyDeepLink(this.deepLink);
             }
+        }
+    }
+
+    private void notifyDeepLink(String deepLink) {
+        if (deepLink != null && this.watchDeepLinkCallbackContext != null) {
+            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, deepLink);
+            pluginResult.setKeepCallback(true);
+            this.watchDeepLinkCallbackContext.sendPluginResult(pluginResult);
         }
     }
 
