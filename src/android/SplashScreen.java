@@ -40,6 +40,7 @@ import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaActivity;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -52,7 +53,8 @@ public class SplashScreen extends CordovaPlugin {
     private static ProgressDialog spinnerDialog;
     private static boolean firstShow = true;
 
-    private String deepLink;
+    private String deepLink = null;
+    private CallbackContext watchDeepLinkCallbackContext = null;
 
     /**
      * Displays the splash drawable.
@@ -64,12 +66,13 @@ public class SplashScreen extends CordovaPlugin {
      */
     private int orientation;
 
+
     // Helper to be compile-time compatible with both Cordova 3.x and 4.x.
     private View getView() {
         try {
-            return (View)webView.getClass().getMethod("getView").invoke(webView);
+            return (View) webView.getClass().getMethod("getView").invoke(webView);
         } catch (Exception e) {
-            return (View)webView;
+            return (View) webView;
         }
     }
 
@@ -107,7 +110,7 @@ public class SplashScreen extends CordovaPlugin {
     /**
      * Shorter way to check value of "SplashMaintainAspectRatio" preference.
      */
-    private boolean isMaintainAspectRatio () {
+    private boolean isMaintainAspectRatio() {
         return preferences.getBoolean("SplashMaintainAspectRatio", false);
     }
 
@@ -159,6 +162,10 @@ public class SplashScreen extends CordovaPlugin {
             callbackContext.success(this.deepLink);
             this.deepLink = null;
             return true;
+        } else if (action.equals("watchDeepLink")) {
+            this.watchDeepLinkCallbackContext = callbackContext;
+            initDeepLink();
+            return true;
         } else {
             return false;
         }
@@ -204,11 +211,21 @@ public class SplashScreen extends CordovaPlugin {
         }
     }
 
+    @Override
+    public void onNewIntent(Intent intent) {
+        initDeepLink();
+    }
+
     private void initDeepLink() {
         if (this.deepLink == null) {
             Intent intent = ((CordovaActivity) this.webView.getContext()).getIntent();
             if (intent != null && intent.getDataString() != null && intent.getDataString().contains("://")) {
                 this.deepLink = intent.getDataString();
+                if (this.watchDeepLinkCallbackContext != null) {
+                    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, this.deepLink);
+                    pluginResult.setKeepCallback(true);
+                    this.watchDeepLinkCallbackContext.sendPluginResult(pluginResult);
+                }
             }
         }
     }
@@ -262,8 +279,7 @@ public class SplashScreen extends CordovaPlugin {
                 if (isMaintainAspectRatio()) {
                     // CENTER_CROP scale mode is equivalent to CSS "background-size:cover"
                     splashImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                }
-                else {
+                } else {
                     // FIT_XY scales image non-uniformly to fit into image view.
                     splashImageView.setScaleType(ImageView.ScaleType.FIT_XY);
                 }
@@ -301,8 +317,7 @@ public class SplashScreen extends CordovaPlugin {
         String loading = null;
         if (webView.canGoBack()) {
             loading = preferences.getString("LoadingDialog", null);
-        }
-        else {
+        } else {
             loading = preferences.getString("LoadingPageDialog", null);
         }
         if (loading != null) {
@@ -314,8 +329,7 @@ public class SplashScreen extends CordovaPlugin {
                 if (comma > 0) {
                     title = loading.substring(0, comma);
                     message = loading.substring(comma + 1);
-                }
-                else {
+                } else {
                     title = "";
                     message = loading;
                 }

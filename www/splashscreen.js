@@ -32,6 +32,9 @@ var splashscreen = {
     },
     fetchAndRemoveDeepLink:function(callback) {
         exec(callback, function() {callback(null)}, "SplashScreen", "fetchAndRemoveDeepLink", []);
+    },
+    watchDeepLink:function(callback) {
+        exec(callback, function() {callback(null)}, "SplashScreen", "watchDeepLink", []);
     }
 };
 
