@@ -79,7 +79,7 @@ public class SplashScreen extends CordovaPlugin {
     @Override
     protected void pluginInitialize() {
 
-        initDeepLink();
+        initDeepLink(true);
 
         if (HAS_BUILT_IN_SPLASH_SCREEN || !firstShow || this.deepLink != null) {
             return;
@@ -158,13 +158,13 @@ public class SplashScreen extends CordovaPlugin {
                 });
             }
         } else if (action.equals("fetchAndRemoveDeepLink")) {
-            initDeepLink();
+            initDeepLink(true);
             callbackContext.success(this.deepLink);
             this.deepLink = null;
             return true;
         } else if (action.equals("watchDeepLink")) {
             this.watchDeepLinkCallbackContext = callbackContext;
-            initDeepLink();
+            initDeepLink(false);
             return true;
         } else {
             return false;
@@ -213,15 +213,15 @@ public class SplashScreen extends CordovaPlugin {
 
     @Override
     public void onNewIntent(Intent intent) {
-        initDeepLink();
+        initDeepLink(false);
     }
 
-    private void initDeepLink() {
+    private void initDeepLink(boolean silently) {
         if (this.deepLink == null) {
             Intent intent = ((CordovaActivity) this.webView.getContext()).getIntent();
             if (intent != null && intent.getDataString() != null && intent.getDataString().contains("://")) {
                 this.deepLink = intent.getDataString();
-                if (this.watchDeepLinkCallbackContext != null) {
+                if (this.watchDeepLinkCallbackContext != null && !silently) {
                     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, this.deepLink);
                     pluginResult.setKeepCallback(true);
                     this.watchDeepLinkCallbackContext.sendPluginResult(pluginResult);
