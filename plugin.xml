@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 20steps: Added android configuration for deep link (app indexing) support) -->
+
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -28,6 +31,8 @@
     <keywords>cordova,splashscreen</keywords>
     <repo>https://git-wip-us.apache.org/repos/asf/cordova-plugin-splashscreen.git</repo>
     <issue>https://issues.apache.org/jira/browse/CB/component/12320653</issue>
+
+    <preference name="DEEP_LINK_SCHEME" />
 
     <engines>
         <engine name="cordova-android" version=">=3.6.0" /><!-- Requires CordovaPlugin.preferences -->
