@@ -1,3 +1,5 @@
+/* 20steps: Added deep link (in app indexing) support */
+
 /*
        Licensed to the Apache Software Foundation (ASF) under one
        or more contributor license agreements.  See the NOTICE file
@@ -23,6 +25,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Handler;
@@ -34,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaActivity;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.json.JSONArray;
@@ -47,6 +51,8 @@ public class SplashScreen extends CordovaPlugin {
     private static Dialog splashDialog;
     private static ProgressDialog spinnerDialog;
     private static boolean firstShow = true;
+
+    private String deepLink;
 
     /**
      * Displays the splash drawable.
@@ -69,9 +75,13 @@ public class SplashScreen extends CordovaPlugin {
 
     @Override
     protected void pluginInitialize() {
-        if (HAS_BUILT_IN_SPLASH_SCREEN || !firstShow) {
+
+        initDeepLink();
+
+        if (HAS_BUILT_IN_SPLASH_SCREEN || !firstShow || this.deepLink != null) {
             return;
         }
+
         // Make WebView invisible while loading URL
         getView().setVisibility(View.INVISIBLE);
         int drawableId = preferences.getInteger("SplashDrawableId", 0);
@@ -144,6 +154,10 @@ public class SplashScreen extends CordovaPlugin {
                     }
                 });
             }
+        } else if (action.equals("fetchAndRemoveDeepLink")) {
+            initDeepLink();
+            callbackContext.success(this.deepLink);
+            this.deepLink = null;
         } else {
             return false;
         }
@@ -185,6 +199,15 @@ public class SplashScreen extends CordovaPlugin {
                 if (drawableId != 0) {
                     splashImageView.setImageDrawable(cordova.getActivity().getResources().getDrawable(drawableId));
                 }
+            }
+        }
+    }
+
+    private void initDeepLink() {
+        if (this.deepLink == null) {
+            Intent intent = ((CordovaActivity) this.webView.getContext()).getIntent();
+            if (intent != null && intent.getDataString() != null && intent.getDataString().contains("://")) {
+                this.deepLink = intent.getDataString();
             }
         }
     }

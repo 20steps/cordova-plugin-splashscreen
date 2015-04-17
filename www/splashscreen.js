@@ -30,8 +30,8 @@ var splashscreen = {
     hide:function() {
         exec(null, null, "SplashScreen", "hide", []);
     },
-    getDeepLink:function(callback) {
-        exec(callback, function() {callback(null)}, "SplashScreen", "getDeepLink", []);
+    fetchAndRemoveDeepLink:function(callback) {
+        exec(callback, function() {callback(null)}, "SplashScreen", "fetchAndRemoveDeepLink", []);
     }
 };
 
