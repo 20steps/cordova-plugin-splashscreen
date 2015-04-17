@@ -158,6 +158,7 @@ public class SplashScreen extends CordovaPlugin {
             initDeepLink();
             callbackContext.success(this.deepLink);
             this.deepLink = null;
+            return true;
         } else {
             return false;
         }
